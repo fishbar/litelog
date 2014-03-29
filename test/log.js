@@ -88,7 +88,12 @@ describe('test log', function () {
     it('check end log', function () {
       var ll = log.get('sys');
       ll.end();
-      expect(ll._stream.stream._writableState.ended).to.be(true);
+      ll.debug('test');
+      if (ll._stream.stream._writableState) {
+        expect(ll._stream.stream._writableState.ended).to.be(true);
+      } else {
+        expect(ll._stream.stream.writable).to.be(false);
+      }
     });
     it('create by config file', function (done) {
       fs.writeFileSync('./logs/config.json', '{"fff":{"level":"ERROR","file":"./logs/fff.log"}}', 'utf-8');

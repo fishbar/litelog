@@ -15,7 +15,6 @@
     "xfs": "0.1.6"
   },
   "devDependencies": {
-    "urllib" : "*",
     "mocha"  : "*",
     "jscoverage" : "*",
     "expect.js"  : "*",

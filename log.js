@@ -159,7 +159,11 @@ function LogStream(options) {
 util.inherits(LogStream, EventEmitter);
 LogStream.prototype.write = function (string, encoding) {
   var st = this.stream;
-  !st._writableState.ended && st.write(string, encoding);
+  try {
+    st.write(string, encoding);
+  } catch (e) {
+    console.error('[litelog] try write when stream closed', this.filename, string);
+  }
 };
 LogStream.prototype.end = function () {
   if (this.stream === process.stdout || this.stream === process.stderr) {
