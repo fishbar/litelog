@@ -197,7 +197,8 @@ LogStream.prototype.cut = function () {
     }
     this.filename = newname;
     logpath = path.join(this.logdir, newname);
-    fs.sync().save(logpath, '', {});
+    // touch file
+    fs.sync().save(logpath, '');
     this.stream = fs.createWriteStream(logpath, {flags: 'a', mode: this.streamMode});
   }
   this._reopening = true;
