@@ -1,9 +1,9 @@
 litelog
 =======
 
-lite nodejs log module
+A nodejs log module
 
-[![Build Status](https://travis-ci.org/fishbar/xfs.svg?branch=master)](https://travis-ci.org/fishbar/xfs)
+[![Build Status](https://travis-ci.org/fishbar/litelog.svg?branch=master)](https://travis-ci.org/fishbar/litelog)
 
 * display with colorful label
 * support mulit-category log files
@@ -54,13 +54,13 @@ log.get('moduleA').warn('warn moduleA');
 
 ## Class Log
 
-  Log.get([name])         # get different log instance by name
-  Log.debug(msg[,msg2])   # log debug level message
-  Log.trace(msg[,msg2])   # log trace level message
-  Log.info(msg[,msg2])    # log info level message
-  Log.warn(msg[,msg2])    # log warm level message
-  Log.error(msg[,msg2])   # log error level message
-  Log.end()               # close this log stream
+* Log.get([name])         # get different log instance by name
+* Log.debug(msg[,msg2])   # log debug level message
+* Log.trace(msg[,msg2])   # log trace level message
+* Log.info(msg[,msg2])    # log info level message
+* Log.warn(msg[,msg2])    # log warm level message
+* Log.error(msg[,msg2])   # log error level message
+* Log.end()               # close this log stream
 
 ## License
 
