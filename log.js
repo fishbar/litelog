@@ -1,68 +1,71 @@
-var fs = require('fs'),
+/*!
+ * litelog: log.js
+ * Authors  : fish <zhengxinlin@gmail.com> (https://github.com/fishbar)
+ * Create   : 2014-03-29 16:52:44
+ * CopyRight 2014 (c) Fish And Other Contributors
+ */
+'use strict';
+
+var fs = require('xfs'),
   util = require('util'),
   path = require('path'),
   EventEmitter = require('events').EventEmitter,
   colors = {
-    "DEBUG" : 36,
-    "TRACE" : 35,
-    "INFO"  : '',
-    "WARN"  : 33,
-    "ERROR" : 31,
-    "FATAL" : 31
+    DEBUG : 36,
+    TRACE : 35,
+    INFO  : '',
+    WARN  : 33,
+    ERROR : 31,
+    FATAL : 31
   },
   // log 配置
   logConfig,
   // log 实例
   instances = {},
+  defaultLog = null,
   posRegExp = [/^\s+at .+$/mg, /^.*?\(?(\/.+?:\d+).*$/],
-  cwd = process.cwd() + '/',
-  base = path.join(__dirname, '../../../');
+  cwd = process.cwd() + '/';
 
 // close streams
-process.on("exit", function () {
+process.on('exit', function () {
   for (var i in instances) {
-    instances[i]._stream.end();
+    instances[i]._stream.end('');
   }
+  instances = null;
+  defaultLog = null;
 });
 
 function fixZero(num) {
   return num > 9 ? num : '0' + num;
 }
 
-function getTime() {
+function getTime(){
   var t = new Date();
-  var Y = t.getFullYear();
-  var m = t.getMonth() + 1;
-  var d = t.getDate();
+  var Y = t.getFullYear() * 10000 + (t.getMonth() + 1) * 100 + t.getDate();
   var H = t.getHours();
-  var i = t.getMinutes();
-  var s = t.getSeconds();
-  var ms = t.getMilliseconds();
+  var M = t.getMinutes();
+  var S = t.getSeconds();
+  var s = t.getMilliseconds();
 
-  return Y + '-' +
-    (m > 9 ? m : '0' + m) + '-' + 
-    (d > 9 ? d : '0' + d) + ' ' +
-    (H > 9 ? H : '0' + H) + ':' +
-    (i > 9 ? i : '0' + i) + ':' +
-    (s > 9 ? s : '0' + s) + '.' +
-    (ms/1000).toFixed(3)
+  return Y + ' ' + 
+    (H > 9 ? H : ('0' + H)) + ':' +
+    (M > 9 ? M : ('0' + M)) + ':' +
+    (S > 9 ? S : ('0' + S )) + '.' + 
+    (s > 99 ? s : (s > 9 ? '0' + s : ('00' + s)));
 }
 
 function getPos(fix) {
   fix = fix ? fix : 0;
-  try {
-    throw new Error();
-  } catch (e) {
-    return e.stack.match(posRegExp[0])[fix].replace(posRegExp[1], '$1').substr(cwd.length);
-  }
+  var e = new Error();
+  return e.stack.match(posRegExp[0])[fix].replace(posRegExp[1], '$1').substr(cwd.length);
 }
 
 var head = '\x1B[', foot = '\x1B[0m';
 
 function formatLog(type, name, pos, msgs) {
   var color = colors[type] + 'm';
-  var msg = util.format.apply(this, msgs);
-  return '[' + getTime() + '][' + head + color + type + foot + '] ' + name + ' - ' + pos + ' ' + msg + "\n";
+  var msg = util.format.apply(null, msgs);
+  return '[' + getTime() + '][' + head + color + type + foot + '] ' + name + ' ' + pos + ' ' + msg + '\n';
 }
 
 function Logger(name, cfg) {
@@ -88,7 +91,7 @@ Logger.prototype = {
     this._stream.write(formatLog(type, this._name, getPos(3), msgs));
   },
   literal: function (msg) {
-    this._stream.write(msg + "\n");
+    this._stream.write(msg + '\n');
   },
   debug : function () {
     this._log('DEBUG', arguments);
@@ -111,14 +114,15 @@ Logger.prototype = {
   get: function (name) {
     var log = instances[name];
     if (!log) {
-      throw new Error('[liteserver] can not find log :' + name);
+      console.error('[liteserver] can not find log :' + name + ', using default log');
+      log = defaultLog;
     }
     return log;
   },
   getStream: function () {
     return this._stream.stream;
   },
-  end : function () {
+  end: function () {
     this._stream.end();
   }
 };
@@ -135,10 +139,10 @@ Logger.prototype = {
  */
 function LogStream(options) {
   options = options || {};
-  if (options.file === process.stdout) {
+  if (options.file === process.stdout || options.file === process.stderr) {
     this.filename = options.file;
   } else {
-    this.logdir = path.dirname(options.file.match(/^\//) ? options.file : path.join(base, options.file));
+    this.logdir = path.dirname(options.file.match(/^\//) ? options.file : path.join(options.file));
     this.nameformat = options.file.match(/[^\/]+$/);
     this.nameformat = this.nameformat ? this.nameformat[0] : 'info.%year%-%month%-%day%.log';
     this.nameformat = this.nameformat.replace('%pid%', process.pid);
@@ -155,7 +159,7 @@ function LogStream(options) {
 util.inherits(LogStream, EventEmitter);
 LogStream.prototype.write = function (string, encoding) {
   var st = this.stream;
-  st.writable && st.write(string, encoding);
+  !st._writableState.ended && st.write(string, encoding);
 };
 LogStream.prototype.end = function () {
   if (this.stream === process.stdout || this.stream === process.stderr) {
@@ -193,19 +197,20 @@ LogStream.prototype.cut = function () {
     }
     this.filename = newname;
     logpath = path.join(this.logdir, newname);
+    fs.sync().save(logpath, '', {});
     this.stream = fs.createWriteStream(logpath, {flags: 'a', mode: this.streamMode});
   }
   this._reopening = true;
   this.stream
-    .on("error", this.emit.bind(this, "error"))
-    .on("pipe", this.emit.bind(this, "pipe"))
-    .on("drain", this.emit.bind(this, "drain"))
-    .on("open", function () {
+    .on('error', this.emit.bind(this, 'error'))
+    .on('pipe', this.emit.bind(this, 'pipe'))
+    .on('drain', this.emit.bind(this, 'drain'))
+    .on('open', function () {
       this._reopening = false;
     }.bind(this))
-    .on("close", function () {
+    .on('close', function () {
       if (!this._reopening) {
-        this.emit("close");
+        this.emit('close');
       }
     }.bind(this));
     
@@ -237,31 +242,39 @@ LogStream.prototype.startTimer = function () {
 
 /**
  * [create description]
- * @param  {[type]} logcfg [description]
- * @return {[type]}        [description]
+ * @param  {String|Path} logcfg can be a configString, or a config.json parth
+ * @return {Log}    default Log instances
  */
 exports.create = function (logcfg) {
   if (typeof logcfg === 'string') {
     // log file, json format
     logConfig = fs.readFileSync(logcfg);
     try {
-      logConfig = JSON.parse(logConfig.toString());
+      logConfig = JSON.parse(logConfig);
     } catch (e) {
-      e.message = 'liteserver log parse logconfig file error ' + e.message;
+      e.message = 'litelog parse logconfig file error ' + e.message;
       throw e;
     }
   } else {
     logConfig = logcfg;
   }
-  var first;
+  if (!logConfig) {
+    throw new Error('litelog config error');
+  }
+  var count = 0;
   for (var i in logConfig) {
+    count ++;
     instances[i] = new Logger(i, logConfig[i]);
-    if (!first) {
-      first = instances[i];
+    if (!defaultLog) {
+      defaultLog = instances[i];
     }
   }
-  return first;
+  if (count === 0) {
+    instances['_'] = new Logger('_', {file: process.stdout, level: 'DEBUG'});
+    defaultLog = instances['_'];
+  }
+  return defaultLog;
 };
-exports.base = function (_base) {
-  base = _base;
-};
+
+exports.STDOUT = process.stdout;
+exports.STDERR = process.stderr;

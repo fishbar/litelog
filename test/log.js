@@ -1,9 +1,15 @@
+/*!
+ * litelog: test/log.js
+ * Authors  : fish <zhengxinlin@gmail.com> (https://github.com/fishbar)
+ * Create   : 2014-03-29 16:52:44
+ * CopyRight 2014 (c) Fish And Other Contributors
+ */
 var jsc = require('jscoverage');
 require = jsc.mock(module);
 var Log = require('../log', true);
-Log.base(__dirname);
-var fs = require('fs');
+var fs = require('xfs');
 var expect = require('expect.js');
+var path = require('path');
 
 describe('test log', function () {
   var log = Log.create({
@@ -29,6 +35,7 @@ describe('test log', function () {
       log.error('error');
       log.fatal("fatal");
       log.literal('literal');
+      log.get('abc');
       var st = log.getStream();
       st.write('write from stream');
       setTimeout(function () {
@@ -36,8 +43,8 @@ describe('test log', function () {
         var y = dd.getFullYear();
         var m = dd.getMonth() + 1;
         m  = m > 9 ? m : '0' + m;
-        var file = __dirname + '/logs/abc.' + y + '-' + m + '.log';
-        var err = fs.readFileSync(file, 'utf-8');
+        var file =  './logs/abc.' + y + '-' + m + '.log';
+        var err = fs.readFileSync(file, 'utf-8').toString();
         expect(err).to.be.match(/WARN/);
         expect(err).to.be.match(/ERROR/);
         expect(err).to.be.match(/DEBUG/);
@@ -47,7 +54,7 @@ describe('test log', function () {
         expect(err).to.be.match(/write from stream/);
         fs.unlinkSync(file);
         done();
-      }, 10);
+      }, 100);
     });
     it('check level setting', function (done) {
       var ll = log.get('level');
@@ -62,7 +69,7 @@ describe('test log', function () {
         var y = dd.getFullYear();
         var m = dd.getMonth() + 1;
         m  = m > 9 ? m : '0' + m;
-        var file = __dirname + '/logs/abcd.' + y + '-' + m + '.log';
+        var file = './logs/abcd.' + y + '-' + m + '.log';
         var err = fs.readFileSync(file, 'utf-8');
         expect(err).to.match(/WARN/);
         expect(err).to.match(/ERROR/);
@@ -74,34 +81,35 @@ describe('test log', function () {
         done();
       }, 100);
     });
-    it('check get log', function () {
-      function a() {
-        log.get('abc');
-      }
-      expect(a).to.throwException();
+    it('get with unknow name', function () {
+      var ll = log.get('abc');
+      expect(typeof ll.info).to.be('function');
     });
     it('check end log', function () {
       var ll = log.get('sys');
       ll.end();
-      expect(ll._stream.stream.writable).to.be(false);
+      expect(ll._stream.stream._writableState.ended).to.be(true);
     });
-    it('check config file', function (done) {
-      fs.writeFileSync(__dirname + '/logs/config.json', '{"sys":{"level":"ERROR","file":"./logs/abc.log"}}', 'utf-8');
-      var llog = Log.create(__dirname + '/logs/config.json');
+    it('create by config file', function (done) {
+      fs.writeFileSync('./logs/config.json', '{"fff":{"level":"ERROR","file":"./logs/fff.log"}}', 'utf-8');
+      var llog = Log.create('./logs/config.json').get('fff');
       llog.error('abc');
       setTimeout(function () {
-        var data = fs.readFileSync(__dirname + '/logs/abc.log');
+        var data = fs.readFileSync('./logs/fff.log');
         expect(data.toString()).to.match(/abc/);
         expect(data.toString()).to.match(/ERROR/);
-        fs.unlinkSync(__dirname + '/logs/config.json');
-        fs.unlinkSync(__dirname + '/logs/abc.log');
+        fs.unlinkSync('./logs/config.json');
+        fs.unlinkSync('./logs/fff.log');
         done();
-      }, 50);
+      }, 100);
     });
 
     it('check stdout', function () {
       var ll = log.get('std');
-      ll.debug('');
+      process.stdout.on('data', function (data) {
+        console.log('>>', data);
+      });
+      ll.debug('this is show in std');
     });
   });
 });

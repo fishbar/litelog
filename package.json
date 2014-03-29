@@ -9,16 +9,17 @@
   },
   "main": "log.js",
   "engines": {
-    "node": ">0.8.0"
+    "node": ">=0.8.0"
   },
   "dependencies": {
-    "xfs": "0.1.4"
+    "xfs": "0.1.6"
   },
   "devDependencies": {
     "urllib" : "*",
     "mocha"  : "*",
     "jscoverage" : "*",
-    "expect.js"  : "*"
+    "expect.js"  : "*",
+    "benchmark" : "*"
   },
   "scripts" : {
     "test" : "mocha test"

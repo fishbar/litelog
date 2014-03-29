@@ -1,8 +1,8 @@
 {
   "predef": [
+    "document",
     "module",
     "require",
-    "exports",
     "__dirname",
     "process",
     "console",
@@ -13,12 +13,8 @@
     "before",
     "beforeEach",
     "after",
-    "afterEach",
-    "expect",
-    "RUN_MODE",
-    "abs"
+    "afterEach"
   ],
-  "quotmark" : false,
   "node": true,
   "es5": true,
   "bitwise": true,
@@ -37,11 +33,12 @@
   "trailing": false,
   "globalstrict": true,
   "nonstandard": true,
-  "white": true,
+  "white": false,
   "indent": 2,
   "expr": true,
   "multistr": true,
   "onevar": false,
-  "unused": true,
-  "swindent": false
+  "unused": "vars",
+  "sub": true,
+  "quoteMark": true
 }
