@@ -26,6 +26,11 @@ var logConfig = {
   }
 };
 var log = Log.create(logConfig);
+// like console.log, Log API can pass more then one param
+// output 
+// [20140303 12:00:00] [INFO] sys file.js:10 1 2 3 4
+// time                level  cate file:line  messages
+log.info(1, 2, 3, 4);
 ```
 
 创建一个log对象，多个日志输出，这样可以给不同的模块分配不同的日志文件
