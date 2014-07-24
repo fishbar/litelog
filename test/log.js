@@ -33,7 +33,7 @@ describe('test log', function () {
       log.trace('trace');
       log.warn('warn');
       log.error('error');
-      log.fatal("fatal");
+      log.fatal('fatal');
       log.literal('literal');
       log.get('abc');
       var st = log.getStream();
@@ -52,6 +52,28 @@ describe('test log', function () {
         expect(err).to.be.match(/FATAL/);
         expect(err).to.be.match(/INFO/);
         expect(err).to.be.match(/write from stream/);
+        //fs.unlinkSync(file);
+        done();
+      }, 100);
+    });
+    it('check every level', function (done) {
+      var log2 = Log.create({
+        sys : {
+          level: 'DEBUG',
+          file : './logs/abc.%year%-%month%.log'
+        }
+      });
+      log2.debug('this is append info');
+      var st = log.getStream();
+      st.write('write from stream');
+      setTimeout(function () {
+        var dd = new Date();
+        var y = dd.getFullYear();
+        var m = dd.getMonth() + 1;
+        m  = m > 9 ? m : '0' + m;
+        var file =  './logs/abc.' + y + '-' + m + '.log';
+        var err = fs.readFileSync(file, 'utf-8').toString();
+        expect(err).to.be.match(/this is append info/);
         fs.unlinkSync(file);
         done();
       }, 100);
@@ -63,7 +85,7 @@ describe('test log', function () {
       ll.trace('trace');
       ll.warn('warn');
       ll.error('error');
-      ll.fatal("fatal");
+      ll.fatal('fatal');
       setTimeout(function () {
         var dd = new Date();
         var y = dd.getFullYear();

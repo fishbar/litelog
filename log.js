@@ -47,10 +47,10 @@ function getTime(){
   var S = t.getSeconds();
   var s = t.getMilliseconds();
 
-  return Y + ' ' + 
+  return Y + ' ' +
     (H > 9 ? H : ('0' + H)) + ':' +
     (M > 9 ? M : ('0' + M)) + ':' +
-    (S > 9 ? S : ('0' + S )) + '.' + 
+    (S > 9 ? S : ('0' + S )) + '.' +
     (s > 99 ? s : (s > 9 ? '0' + s : ('00' + s)));
 }
 
@@ -69,6 +69,9 @@ function formatLog(type, name, pos, msgs) {
 }
 
 function Logger(name, cfg) {
+  if (!this instanceof Logger) {
+    return defaultLog.get(name);
+  }
   this._name = name;
   this._level = Logger[cfg.level ? cfg.level : 'WARN'];
   cfg.file = cfg.file ? cfg.file : process.stdout;
@@ -202,8 +205,10 @@ LogStream.prototype.cut = function () {
     this.filename = newname;
     logpath = path.join(this.logdir, newname);
     // touch file
-    fs.sync().save(logpath, '');
-    this.stream = fs.createWriteStream(logpath, {flags: 'a', mode: this.streamMode});
+    if (!fs.existsSync(logpath)) {
+      fs.sync().save(logpath, '');
+    }
+    this.stream = fs.createWriteStream(logpath, {flags: 'a'});
   }
   this._reopening = true;
   this.stream
@@ -218,7 +223,7 @@ LogStream.prototype.cut = function () {
         this.emit('close');
       }
     }.bind(this));
-    
+
   if (oldstream && oldstream !== process.stdout && oldstream !== process.stderr) {
     oldstream.removeAllListeners();
     oldstream.end();
