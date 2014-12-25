@@ -39,7 +39,7 @@ function fixZero(num) {
   return num > 9 ? num : '0' + num;
 }
 
-function getTime(){
+function getTime() {
   var t = new Date();
   var Y = t.getFullYear() * 10000 + (t.getMonth() + 1) * 100 + t.getDate();
   var H = t.getHours();
@@ -62,10 +62,25 @@ function getPos(fix) {
 
 var head = '\x1B[', foot = '\x1B[0m';
 
-function formatLog(type, name, pos, msgs) {
+function formatLog(fmt, type, name, pos, msgs) {
   var color = colors[type] + 'm';
   var msg = util.format.apply(null, msgs);
-  return '[' + getTime() + '][' + head + color + type + foot + '] ' + name + ' ' + pos + ' ' + msg + '\n';
+  var clevel = head + color + type + foot;
+  var pid = process.pid;
+
+  if (fmt) {
+    // custom log formatter
+    return fmt({
+      level: clevel,
+      pid: pid,
+      type: name,
+      pos: pos,
+      msg: msg,
+      time: getTime
+    }) + '\n';
+  } else {
+    return '[' + getTime() + '][' + clevel + '] #' + pid + ' ' + name + ' ' + pos + ' ' + msg + '\n';
+  }
 }
 
 function Logger(name, cfg) {
@@ -73,6 +88,7 @@ function Logger(name, cfg) {
     return defaultLog.get(name);
   }
   this._name = name;
+  this._fmt = cfg.formatter;
   this._level = Logger[cfg.level ? cfg.level : 'WARN'];
   cfg.file = cfg.file ? cfg.file : process.stdout;
   this._stream = new LogStream({file: cfg.file, duration: cfg.duration});
@@ -91,7 +107,7 @@ Logger.prototype = {
     if (Logger[type] < this._level) {
       return;
     }
-    this._stream.write(formatLog(type, this._name, getPos(3), msgs));
+    this._stream.write(formatLog(this._fmt, type, this._name, getPos(3), msgs));
   },
   literal: function (msg) {
     this._stream.write(msg + '\n');

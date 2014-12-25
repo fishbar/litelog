@@ -24,6 +24,14 @@ describe('test log', function () {
     level : {
       level : 'INFO',
       file : './logs/abcd.%year%-%month%.log'
+    },
+    custom: {
+      level: 'WARN',
+      file: './logs/custom.log',
+      formatter: function (msg) {
+        msg.time = msg.time();
+        return JSON.stringify(msg);
+      }
     }
   });
   describe('create log object, test default first log', function () {
@@ -77,6 +85,24 @@ describe('test log', function () {
         fs.unlinkSync(file);
         done();
       }, 100);
+    });
+    it.only('check custom formatter', function (done) {
+      var ll = log.get('custom');
+      ll.warn('this is a %s', 'test');
+      setTimeout(function () {
+        var file = './logs/custom.log';
+        var cnt = fs.readFileSync(file, 'utf-8').toString();
+        fs.unlinkSync(file);
+        var obj = JSON.parse(cnt);
+        expect(obj).to.have.keys('time', 'level', 'pid', 'type', 'pos', 'msg');
+        expect(obj.pos).to.match(/test\/log\.js:\d+/);
+        expect(obj.msg).to.be('this is a test');
+        expect(obj.level).match(/WARN/);
+        expect(obj.pid).match(/^\d+$/);
+        expect(obj.type).to.be('custom');
+        expect(obj.time).to.match(/^\d{8} \d{2}:\d{2}:\d{2}.\d{3}$/);
+        done();
+      });
     });
     it('check level setting', function (done) {
       var ll = log.get('level');

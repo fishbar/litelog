@@ -39,7 +39,23 @@ var logConfig = {
   moduleA: {
     level: 'WARN',
     // split your log file, all support vars are list in this example
-    file: './logs/moduleA.%year%.%month%.%day%.%hour%.%pid%' 
+    file: './logs/moduleA.%year%.%month%.%day%.%hour%.%pid%'
+  },
+  custom: {
+    level: 'DEBUG',
+    file: './logs/custom.log',
+    formatter: function (msg) {
+      /**
+       * custom the log format
+       * object msg {
+       *  level    DEBUG|WARN|ERROR...
+       *  type     the log name, here is `custom`
+       *  pid      the log is write by which process
+       *  pos      the log is written by which code
+       *  msg      the log msg
+       * }
+       */
+    }
   }
 };
 var log = Log.create(logConfig);
