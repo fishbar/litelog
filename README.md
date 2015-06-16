@@ -53,11 +53,12 @@ var logConfig = {
       /**
        * custom the log format
        * object msg {
-       *  level    DEBUG|WARN|ERROR...
-       *  type     the log name, here is `custom`
-       *  pid      the log is write by which process
-       *  pos      the log is written by which code
-       *  msg      the log msg
+       *  level {String}   DEBUG|WARN|ERROR...
+       *  type  {String}   the log name, here is `custom`
+       *  pid   {Number}   the log is write by which process
+       *  pos   {String}   the log is written by which code
+       *  msg   {String}   the log msg
+       *  time {Function} return current time string,custom timeformat if you needed
        * }
        */
     }
