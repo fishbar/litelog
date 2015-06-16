@@ -50,7 +50,7 @@ function getTime() {
   return Y + ' ' +
     (H > 9 ? H : ('0' + H)) + ':' +
     (M > 9 ? M : ('0' + M)) + ':' +
-    (S > 9 ? S : ('0' + S )) + '.' +
+    (S > 9 ? S : ('0' + S)) + '.' +
     (s > 99 ? s : (s > 9 ? '0' + s : ('00' + s)));
 }
 
@@ -62,9 +62,54 @@ function getPos(fix) {
 
 var head = '\x1B[', foot = '\x1B[0m';
 
+var formatRegExp = /%[sdj%]/g;
+function formatMsg() {
+  var i, tmp, args = arguments;
+  if (typeof args[0] !== 'string') {
+    var objects = [];
+    for (i = 0; i < args.length; i++) {
+      tmp = args[i];
+      objects.push(util.isObject(tmp) ? util.inspect(tmp) : tmp);
+    }
+    return objects.join(' ');
+  }
+
+  var len = args.length;
+  i = 1;
+  var str = String(args[0]).replace(formatRegExp, function (x) {
+    if (x === '%%') {
+      return '%';
+    }
+    if (i >= len) {
+      return x;
+    }
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+        break;
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (util.isNull(x) || !util.isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + util.inspect(x);
+    }
+  }
+  return str;
+}
+
 function formatLog(fmt, type, name, pos, msgs) {
   var color = colors[type] + 'm';
-  var msg = util.format.apply(null, msgs);
+  var msg = formatMsg.apply(null, msgs);
   var clevel = head + color + type + foot;
   var pid = process.pid;
 
@@ -304,3 +349,4 @@ exports.create = function (logcfg) {
 
 exports.STDOUT = process.stdout;
 exports.STDERR = process.stderr;
+

@@ -86,7 +86,7 @@ describe('test log', function () {
         done();
       }, 100);
     });
-    it.only('check custom formatter', function (done) {
+    it('check custom formatter', function (done) {
       var ll = log.get('custom');
       ll.warn('this is a %s', 'test');
       setTimeout(function () {
