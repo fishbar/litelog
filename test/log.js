@@ -4,9 +4,7 @@
  * Create   : 2014-03-29 16:52:44
  * CopyRight 2014 (c) Fish And Other Contributors
  */
-var jsc = require('jscoverage');
-require = jsc.mock(module);
-var Log = require('../log', true);
+var Log = require('../log');
 var fs = require('xfs');
 var expect = require('expect.js');
 var path = require('path');
