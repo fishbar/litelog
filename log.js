@@ -107,10 +107,10 @@ function formatMsg() {
   return str;
 }
 
-function formatLog(fmt, type, name, pos, msgs) {
+function formatLog(colorful, fmt, type, name, pos, msgs) {
   var color = colors[type] + 'm';
   var msg = formatMsg.apply(null, msgs);
-  var clevel = head + color + type + foot;
+  var clevel = colorful ? (head + color + type + foot) : type;
   var pid = process.pid;
 
   if (fmt) {
@@ -132,6 +132,7 @@ function Logger(name, cfg) {
   if (!this instanceof Logger) {
     return defaultLog.get(name);
   }
+  this._colorful = false;
   this._name = name;
   this._fmt = cfg.formatter;
   this._level = Logger[cfg.level ? cfg.level : 'WARN'];
@@ -152,7 +153,7 @@ Logger.prototype = {
     if (Logger[type] < this._level) {
       return;
     }
-    this._stream.write(formatLog(this._fmt, type, this._name, getPos(3), msgs));
+    this._stream.write(formatLog(this._colorful, this._fmt, type, this._name, getPos(3), msgs));
   },
   literal: function (msg) {
     this._stream.write(msg + '\n');
@@ -185,6 +186,9 @@ Logger.prototype = {
   },
   getStream: function () {
     return this._stream.stream;
+  },
+  colorful: function (bool) {
+    this._colorful = bool;
   },
   end: function () {
     this._stream.end();

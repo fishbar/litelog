@@ -162,5 +162,14 @@ describe('test log', function () {
       });
       ll.debug('this is show in std');
     });
+    it('check stdout', function () {
+      var ll = log.get('std');
+      process.stdout.on('data', function (data) {
+        console.log('>>', data);
+      });
+      ll.colorful(true);
+      ll.debug('this is show in std, and should colorful');
+      ll.colorful(false);
+    });
   });
 });
