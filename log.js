@@ -351,6 +351,7 @@ exports.create = function (logcfg) {
   }
   return defaultLog;
 };
+exports.getTime = getTime;
 
 exports.STDOUT = process.stdout;
 exports.STDERR = process.stderr;
