@@ -190,6 +190,7 @@ Logger.prototype = {
   colorful: function (bool) {
     this._colorful = bool;
   },
+  time: getTime,
   end: function () {
     this._stream.end();
   }

@@ -27,7 +27,7 @@ var logConfig = {
 };
 var log = Log.create(logConfig);
 // like console.log, Log API can pass more then one param
-// output 
+// output
 // [20140303 12:00:00] [INFO] sys file.js:10 1 2 3 4
 // time                level  cate file:line  messages
 log.info(1, 2, 3, 4);
@@ -74,7 +74,7 @@ log.get('moduleA').warn('warn moduleA');
 (log.get() === log) && console.log('they are same log object');
 ```
 
-## Class Log
+## <class> Log
 
 * Log.get([name])         # get different log instance by name
 * Log.debug(msg[,msg2])   # log debug level message
@@ -83,7 +83,8 @@ log.get('moduleA').warn('warn moduleA');
 * Log.warn(msg[,msg2])    # log warm level message
 * Log.error(msg[,msg2])   # log error level message
 * Log.end()               # close this log stream
-
+* Log.colorful(boolean)   # enable colorful print, default is false
+* Log.time()              # get sys time  yyyy-mm-dd hh:mm:ss.ms
 ## License
 
   MIT
