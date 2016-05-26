@@ -5,8 +5,6 @@
  * CopyRight 2014 (c) Fish And Other Contributors
  */
 var Benchmark = require('benchmark');
-var suite = new Benchmark.Suite;
-
 
 function getTime() {
   var t = new Date();
@@ -19,7 +17,7 @@ function getTime() {
   var ms = t.getMilliseconds();
 
   return Y + '-' +
-    (m > 9 ? m : ('0' + m)) + '-' + 
+    (m > 9 ? m : ('0' + m)) + '-' +
     (d > 9 ? d : ('0' + d)) + ' ' +
     (H > 9 ? H : ('0' + H)) + ':' +
     (i > 9 ? i : ('0' + i)) + ':' +
@@ -41,7 +39,7 @@ function getTime3() {
   var i = t.getMinutes();
   var s = t.getSeconds() + t.getMilliseconds() / 1000;
 
-  
+
   var obj = {
     Y: Y,
     m: m > 9 ? m : ('0' + m),
@@ -70,7 +68,7 @@ function getTime4() {
   ms = ms > 99 ? ms : ms > 9 ? '0' + ms : '00' + ms;
 
   return [Y, '-',
-    (m > 9 ? m : ('0' + m)), '-', 
+    (m > 9 ? m : ('0' + m)), '-',
     (d > 9 ? d : ('0' + d)), ' ',
     (H > 9 ? H : ('0' + H)), ':',
     (i > 9 ? i : ('0' + i)), ':',
@@ -85,19 +83,19 @@ function getTime5(){
   var s = t.getSeconds();
   var ms = t.getMilliseconds();
 
-  return Y + ' ' + 
+  return Y + ' ' +
     (H > 9 ? H : ('0' + H)) + ':' +
     (i > 9 ? i : ('0' + i)) + ':' +
-    (s > 9 ? s : ('0' + s )) + '.' + 
+    (s > 9 ? s : ('0' + s )) + '.' +
     (ms > 99 ? ms : (ms > 9 ? '0' + ms : ('00' + ms)));
 }
 
 // console.log([getTime(),getTime2(),getTime3(),getTime4(),getTime5()]);
 // add tests
-suite.add('getTime()', function() {
+var suiteTime = new Benchmark.Suite;
+suiteTime.add('getTime()', function() {
   getTime();
 })
-/*
 .add('getTime2()', function() {
   getTime2();
 })
@@ -107,7 +105,6 @@ suite.add('getTime()', function() {
 .add('getTime4()', function () {
   getTime4();
 })
-*/
 .add('getTime5()', function () {
   getTime5();
 })
@@ -116,7 +113,42 @@ suite.add('getTime()', function() {
   console.log(String(event.target));
 })
 .on('complete', function() {
-  console.log('Fastest is ' + this.filter('fastest').pluck('name'));
+  console.log('Fastest is ' + this.filter('fastest').map('name'));
+})
+// run async
+// .run({ 'async': true });
+
+
+var cwd = process.cwd() + '/';
+var posRegExp = [/^\s+at .+$/mg, /^.*?\(?(\/.+?:\d+).*$/];
+
+function getPos1(fix) {
+  fix = fix ? fix : 0;
+  var e = new Error();
+  return e.stack.match(posRegExp[0])[fix].replace(posRegExp[1], '$1').substr(cwd.length);
+}
+
+function getPos2(fix) {
+  var stack = new Error().stack.split('\n');
+  var line = stack[fix];
+  var leftBracket = line.lastIndexOf('(');
+  line = line.substring(leftBracket + 1, line.length - 1);
+  return line.substr(cwd.length);
+}
+
+var suitePos = new Benchmark.Suite;
+suitePos.add('old getPos', function () {
+  getPos1(3);
+})
+.add('new getPos', function () {
+  getPos2(3);
+})
+// add listeners
+.on('cycle', function(event) {
+  console.log(String(event.target));
+})
+.on('complete', function() {
+  console.log('Fastest is ' + this.filter('fastest').map('name'));
 })
 // run async
 .run({ 'async': true });

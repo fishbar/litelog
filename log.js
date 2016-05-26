@@ -12,18 +12,17 @@ var fs = require('xfs'),
   EventEmitter = require('events').EventEmitter,
   colors = {
     DEBUG : 36,
-    TRACE : 35,
-    INFO  : '',
+    TRACE : 32,
+    INFO  : 34,
     WARN  : 33,
     ERROR : 31,
-    FATAL : 31
+    FATAL : 35
   },
   // log 配置
   logConfig,
   // log 实例
   instances = {},
   defaultLog = null,
-  posRegExp = [/^\s+at .+$/mg, /^.*?\(?(\/.+?:\d+).*$/],
   cwd = process.cwd() + '/';
 
 // close streams
@@ -55,9 +54,14 @@ function getTime() {
 }
 
 function getPos(fix) {
-  fix = fix ? fix : 0;
-  var e = new Error();
-  return e.stack.match(posRegExp[0])[fix].replace(posRegExp[1], '$1').substr(cwd.length);
+  //fix = fix ? fix : 0;
+  // var e = new Error();
+  var stack = new Error().stack.split('\n');
+  var line = stack[fix];
+  var leftBracket = line.lastIndexOf('(');
+  line = line.substring(leftBracket + 1, line.length - 1);
+
+  return line.substr(cwd.length);
 }
 
 var head = '\x1B[', foot = '\x1B[0m';
@@ -124,7 +128,7 @@ function formatLog(colorful, fmt, type, name, pos, msgs) {
       time: getTime
     }) + '\n';
   } else {
-    return '[' + getTime() + '][' + clevel + '] #' + pid + ' ' + name + ' ' + pos + ' ' + msg + '\n';
+    return getTime() + ' ' + clevel + ' #' + pid + ' ' + name + ' (' + pos + ') ' + msg + '\n';
   }
 }
 
@@ -153,7 +157,7 @@ Logger.prototype = {
     if (Logger[type] < this._level) {
       return;
     }
-    this._stream.write(formatLog(this._colorful, this._fmt, type, this._name, getPos(3), msgs));
+    this._stream.write(formatLog(this._colorful, this._fmt, type, this._name, getPos(4), msgs));
   },
   literal: function (msg) {
     this._stream.write(msg + '\n');
@@ -339,7 +343,7 @@ exports.create = function (logcfg) {
   }
   var count = 0;
   for (var i in logConfig) {
-    count ++;
+    count++;
     instances[i] = new Logger(i, logConfig[i]);
     if (!defaultLog) {
       defaultLog = instances[i];
@@ -355,4 +359,3 @@ exports.getTime = getTime;
 
 exports.STDOUT = process.stdout;
 exports.STDERR = process.stderr;
-
