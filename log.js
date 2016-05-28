@@ -141,8 +141,12 @@ function Logger(name, cfg) {
   this._name = name;
   this._fmt = cfg.formatter;
   this._level = Logger[cfg.level ? cfg.level : 'WARN'];
-  cfg.file = cfg.file ? cfg.file : process.stdout;
-  this._stream = new LogStream({file: cfg.file, duration: cfg.duration});
+  this.logFile = cfg.file;
+  this._stream = new LogStream({file: cfg.file || process.stdout, duration: cfg.duration});
+  this._stream.onCut = function (filename) {
+    self.logFile = filename;
+    cfg.onCut && cfg.onCut(filename);
+  };
 }
 
 Logger.DEBUG = 0;
@@ -292,6 +296,7 @@ LogStream.prototype.cut = function () {
       fs.sync().save(logpath, '');
     }
     this.stream = fs.createWriteStream(logpath, {flags: 'a'});
+    this.onCut && this.onCut(newname);
   }
   this._reopening = true;
   this.stream
