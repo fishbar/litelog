@@ -113,25 +113,27 @@ function formatMsg() {
   return str;
 }
 
-function formatLog(colorful, fmt, type, name, pos, msgs) {
-  var color = colors[type] + 'm';
+function color(type, info) {
+  var cc = colors[type] + 'm';
+  return head + cc + info + foot;
+}
+
+function formatLog(colorful, level, type, pos, msgs) {
   var msg = formatMsg.apply(null, msgs);
-  var clevel = colorful ? (head + color + type + foot) : type;
   var pid = process.pid;
 
-  if (fmt) {
     // custom log formatter
-    return fmt({
-      level: clevel,
-      pid: pid,
-      type: name,
-      pos: pos,
-      msg: msg,
-      time: getTime
-    }) + '\n';
-  } else {
-    return getTime() + ' ' + clevel + ' #' + pid + ' ' + name + ' (' + pos + ') ' + msg + '\n';
-  }
+  return Logger.fmt({
+    level: level,
+    pid: pid,
+    type: type,
+    pos: pos,
+    msg: msg,
+    color: colorful ? color : function (level, msg) {
+      return msg;
+    },
+    time: getTime
+  }) + '\n';
 }
 
 function Logger(name, cfg) {
@@ -141,7 +143,6 @@ function Logger(name, cfg) {
   this._root = process.cwd() + '/';
   this._colorful = false;
   this._name = name;
-  this._fmt = cfg.formatter;
   this._level = Logger[cfg.level ? cfg.level : 'WARN'];
   this.logFile = cfg.file;
   this._stream = new LogStream({file: cfg.file || process.stdout, duration: cfg.duration});
@@ -150,6 +151,10 @@ function Logger(name, cfg) {
     cfg.onCut && cfg.onCut(filename);
   };
 }
+
+Logger.fmt = function (obj) {
+  return obj.color(obj.level, obj.time() + ' ' + obj.level) + ' #' + obj.pid + ' ' + obj.type + ' (' + obj.pos + ') ' + obj.msg + '\n';
+};
 
 Logger.DEBUG = 0;
 Logger.TRACE = 1;
@@ -166,7 +171,7 @@ Logger.prototype = {
       return;
     }
     let pos = getPos(depth).substr(this._root.length);
-    this._stream.write(formatLog(this._colorful, this._fmt, type, this._name, pos, msgs));
+    this._stream.write(formatLog(this._colorful, type, this._name, pos, msgs));
   },
   literal: function (msg) {
     this._stream.write(msg + '\n');
@@ -376,6 +381,12 @@ exports.create = function (logcfg) {
   return defaultLog;
 };
 exports.getTime = getTime;
+exports.getFormatter = function () {
+  return Logger.fmt;
+};
+exports.setFormatter = function (fmt) {
+  Logger.fmt = fmt;
+};
 
 exports.STDOUT = process.stdout;
 exports.STDERR = process.stderr;

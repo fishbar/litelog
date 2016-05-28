@@ -48,20 +48,7 @@ var logConfig = {
   },
   custom: {
     level: 'DEBUG',
-    file: './logs/custom.log',
-    formatter: function (msg) {
-      /**
-       * custom the log format
-       * object msg {
-       *  level {String}   DEBUG|WARN|ERROR...
-       *  type  {String}   the log name, here is `custom`
-       *  pid   {Number}   the log is write by which process
-       *  pos   {String}   the log is written by which code
-       *  msg   {String}   the log msg
-       *  time {Function} return current time string,custom timeformat if you needed
-       * }
-       */
-    }
+    file: './logs/custom.log'
   }
 };
 var log = Log.create(logConfig);
@@ -70,11 +57,20 @@ var log = Log.create(logConfig);
 log.info('i am the default log object');
 // write log moduleA
 log.get('moduleA').warn('warn moduleA');
+// setRoot for cut short the log call referer script path,
+log.setRoot(root);
 
 (log.get() === log) && console.log('they are same log object');
 ```
 
 ## <class> Log
+
+### static function
+
+* Log.setFormatter(fmt<Function>)  # custom log formatter
+* Log.getFormatter()               # get current log formatter
+
+### instance functions
 
 * Log.get([name])         # get different log instance by name
 * Log.debug(msg[,msg2])   # log debug level message
@@ -85,6 +81,7 @@ log.get('moduleA').warn('warn moduleA');
 * Log.end()               # close this log stream
 * Log.colorful(boolean)   # enable colorful print, default is false
 * Log.time()              # get sys time  yyyy-mm-dd hh:mm:ss.ms
+
 ## License
 
   MIT
