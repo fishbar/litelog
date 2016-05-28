@@ -57,9 +57,11 @@ function getPos(fix) {
   // var e = new Error();
   var stack = new Error().stack.split('\n');
   var line = stack[fix];
-  var leftBracket = line.lastIndexOf('(');
-  line = line.substring(leftBracket + 1, line.length - 1);
-
+  var lastSpace = line.lastIndexOf(' ');
+  line = line.substring(lastSpace + 1, line.length);
+  if (line[0] === '(') {
+    line = line.substring(1, line.length - 1);
+  }
   return line;
 }
 
@@ -191,7 +193,7 @@ Logger.prototype = {
     var log = instances[name];
     if (!log) {
       /* eslint-disable no-alert, no-console */
-      console.error('[liteserver] can not find log :' + name + ', using default log');
+      console.error('[litelog] can not find log :' + name + ', using default log');
       /* eslint-enable no-alert, no-console */
       log = defaultLog;
     }
@@ -201,7 +203,7 @@ Logger.prototype = {
     return this._stream.stream;
   },
   setRoot: function (root) {
-    if (/\/$/.test(root)) {
+    if (!/\/$/.test(root)) {
       root += '/';
     }
     this._root = root;
