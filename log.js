@@ -22,8 +22,7 @@ var fs = require('xfs'),
   logConfig,
   // log 实例
   instances = {},
-  defaultLog = null,
-  cwd = process.cwd() + '/';
+  defaultLog = null;
 
 // close streams
 process.on('exit', function () {
@@ -61,7 +60,7 @@ function getPos(fix) {
   var leftBracket = line.lastIndexOf('(');
   line = line.substring(leftBracket + 1, line.length - 1);
 
-  return line.substr(cwd.length);
+  return line;
 }
 
 var head = '\x1B[', foot = '\x1B[0m';
@@ -87,16 +86,17 @@ function formatMsg() {
     if (i >= len) {
       return x;
     }
+    let s;
     switch (x) {
       case '%s': return String(args[i++]);
       case '%d': return Number(args[i++]);
       case '%j':
         try {
-          return JSON.stringify(args[i++]);
-        } catch (_) {
-          return '[Circular]';
+          s = JSON.stringify(args[i++]);
+        } catch (e) {
+          s = '[Circular]';
         }
-        break;
+        return s;
       default:
         return x;
     }
@@ -136,6 +136,7 @@ function Logger(name, cfg) {
   if (!this instanceof Logger) {
     return defaultLog.get(name);
   }
+  this._root = process.cwd() + '/';
   this._colorful = false;
   this._name = name;
   this._fmt = cfg.formatter;
@@ -153,43 +154,53 @@ Logger.FATAL = 5;
 Logger.OFF = 6;
 
 Logger.prototype = {
-  _log: function (type, msgs) {
+  depth: 4,
+  _log: function (type, depth, msgs) {
     if (Logger[type] < this._level) {
       return;
     }
-    this._stream.write(formatLog(this._colorful, this._fmt, type, this._name, getPos(4), msgs));
+    let pos = getPos(depth).substr(this._root.length);
+    this._stream.write(formatLog(this._colorful, this._fmt, type, this._name, pos, msgs));
   },
   literal: function (msg) {
     this._stream.write(msg + '\n');
   },
-  debug : function () {
-    this._log('DEBUG', arguments);
+  debug: function () {
+    this._log('DEBUG', 4, arguments);
   },
-  trace : function () {
-    this._log('TRACE', arguments);
+  trace: function () {
+    this._log('TRACE', 4, arguments);
   },
-  info : function () {
-    this._log('INFO', arguments);
+  info: function () {
+    this._log('INFO', 4, arguments);
   },
-  warn : function () {
-    this._log('WARN', arguments);
+  warn: function () {
+    this._log('WARN', 4, arguments);
   },
-  error : function () {
-    this._log('ERROR', arguments);
+  error: function () {
+    this._log('ERROR', 4, arguments);
   },
-  fatal : function () {
-    this._log('FATAL', arguments);
+  fatal: function () {
+    this._log('FATAL', 4, arguments);
   },
   get: function (name) {
     var log = instances[name];
     if (!log) {
+      /* eslint-disable no-alert, no-console */
       console.error('[liteserver] can not find log :' + name + ', using default log');
+      /* eslint-enable no-alert, no-console */
       log = defaultLog;
     }
     return log;
   },
   getStream: function () {
     return this._stream.stream;
+  },
+  setRoot: function (root) {
+    if (/\/$/.test(root)) {
+      root += '/';
+    }
+    this._root = root;
   },
   colorful: function (bool) {
     this._colorful = bool;
@@ -235,7 +246,9 @@ LogStream.prototype.write = function (string, encoding) {
   try {
     st.write(string, encoding);
   } catch (e) {
+    /* eslint-disable no-alert, no-console */
     console.error('[litelog] try write when stream closed', this.filename, string);
+    /* eslint-enable no-alert, no-console */
   }
 };
 LogStream.prototype.end = function () {

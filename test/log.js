@@ -159,14 +159,20 @@ describe('test log', function () {
       var ll = log.get('std');
       process.stdout.on('data', function (data) {
         console.log('>>', data);
+        expect(data.toString()).match(/ DEBUG/);
       });
       ll.debug('this is show in std');
     });
-    it('check stdout', function () {
+    it('check stdout colorful', function () {
       var ll = log.get('std');
-      process.stdout.on('data', function (data) {
-        console.log('>>', data);
-      });
+      ll.colorful(true);
+      ll.debug('this is show in std, and should colorful');
+      ll.colorful(false);
+    });
+
+    it('setRoot', function () {
+      var ll = log.get('std');
+      ll.setRoot(__dirname);
       ll.colorful(true);
       ll.debug('this is show in std, and should colorful');
       ll.colorful(false);

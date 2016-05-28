@@ -6,8 +6,8 @@ init: install test
 install:
 	@npm install
 
-test: install
-	@$(INSTALL_TEST) 
+test:
+	@$(INSTALL_TEST)
 	@$(MOCHA) ./test --coverage
-  
+
 .PHONY: instal test
