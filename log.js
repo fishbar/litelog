@@ -65,11 +65,14 @@ function getPos(fix) {
   return line;
 }
 
-var head = '\x1B[', foot = '\x1B[0m';
+var head = '\x1B[';
+var foot = '\x1B[0m';
 
 var formatRegExp = /%[sdj%]/g;
 function formatMsg() {
-  var i, tmp, args = arguments;
+  var i;
+  var tmp;
+  var args = arguments;
   if (typeof args[0] !== 'string') {
     var objects = [];
     for (i = 0; i < args.length; i++) {

@@ -163,10 +163,6 @@ describe('test log', function () {
 
     it('check stdout', function () {
       var ll = log.get('std');
-      process.stdout.on('data', function (data) {
-        console.log('>>', data);
-        expect(data.toString()).match(/ DEBUG/);
-      });
       ll.debug('this is show in std');
     });
     it('check stdout colorful', function () {
