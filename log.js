@@ -143,6 +143,7 @@ function Logger(name, cfg) {
   if (!this instanceof Logger) {
     return defaultLog.get(name);
   }
+  var self = this;
   this._root = process.cwd() + '/';
   this._colorful = false;
   this._name = name;
