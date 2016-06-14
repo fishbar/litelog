@@ -157,7 +157,7 @@ function Logger(name, cfg) {
 }
 
 Logger.fmt = function (obj) {
-  return obj.color(obj.level, obj.time() + ' ' + obj.level) + ' #' + obj.pid + ' ' + obj.type + ' (' + obj.pos + ') ' + obj.msg + '\n';
+  return obj.color(obj.level, obj.time() + ' ' + obj.level) + ' #' + obj.pid + ' ' + obj.type + ' (' + obj.pos + ') ' + obj.msg;
 };
 
 Logger.DEBUG = 0;
