@@ -87,7 +87,7 @@ describe('test log', function () {
     it('check custom formatter', function (done) {
       var ll = log.get('custom');
       var originFmt = Log.getFormatter();
-      Log.setFormatter(function (obj) {
+      ll.setFormatter(function (obj) {
         obj.time = obj.time();
         return JSON.stringify(obj);
       });
@@ -104,7 +104,7 @@ describe('test log', function () {
         expect(obj.pid).match(/^\d+$/);
         expect(obj.type).to.be('custom');
         expect(obj.time).to.match(/^\d{8} \d{2}:\d{2}:\d{2}.\d{3}$/);
-        Log.setFormatter(originFmt);
+        ll.setFormatter(originFmt);
         done();
       });
     });

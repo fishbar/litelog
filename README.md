@@ -67,8 +67,10 @@ log.setRoot(root);
 
 ### static function
 
+<del>
 * Log.setFormatter(fmt<Function>)  # custom log formatter
 * Log.getFormatter()               # get current log formatter
+</del>
 
 ### instance functions
 
@@ -81,7 +83,7 @@ log.setRoot(root);
 * Log.end()               # close this log stream
 * Log.colorful(boolean)   # enable colorful print, default is false
 * Log.time()              # get sys time  yyyy-mm-dd hh:mm:ss.ms
-
+* Log.setFormatter        # set formatter function
 ## License
 
   MIT

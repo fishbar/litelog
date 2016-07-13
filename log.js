@@ -53,7 +53,7 @@ function getTime() {
 }
 
 function getPos(fix) {
-  //fix = fix ? fix : 0;
+  // fix = fix ? fix : 0;
   // var e = new Error();
   var stack = new Error().stack.split('\n');
   var line = stack[fix];
@@ -121,12 +121,12 @@ function color(type, info) {
   return head + cc + info + foot;
 }
 
-function formatLog(colorful, level, type, pos, msgs) {
+function formatLog(fmt, colorful, level, type, pos, msgs) {
   var msg = formatMsg.apply(null, msgs);
   var pid = process.pid;
 
     // custom log formatter
-  return Logger.fmt({
+  return fmt({
     level: level,
     pid: pid,
     type: type,
@@ -156,10 +156,6 @@ function Logger(name, cfg) {
   };
 }
 
-Logger.fmt = function (obj) {
-  return obj.color(obj.level, obj.time() + ' ' + obj.level) + ' #' + obj.pid + ' ' + obj.type + ' (' + obj.pos + ') ' + obj.msg;
-};
-
 Logger.DEBUG = 0;
 Logger.TRACE = 1;
 Logger.INFO = 2;
@@ -175,7 +171,7 @@ Logger.prototype = {
       return;
     }
     let pos = getPos(depth).substr(this._root.length);
-    this._stream.write(formatLog(this._colorful, type, this._name, pos, msgs));
+    this._stream.write(formatLog(this.fmt, this._colorful, type, this._name, pos, msgs));
   },
   literal: function (msg) {
     this._stream.write(msg + '\n');
@@ -223,6 +219,12 @@ Logger.prototype = {
   time: getTime,
   end: function () {
     this._stream.end();
+  },
+  fmt: function (obj) {
+    return obj.color(obj.level, obj.time() + ' ' + obj.level) + ' #' + obj.pid + ' ' + obj.type + ' (' + obj.pos + ') ' + obj.msg;
+  },
+  setFormatter: function (fmt) {
+    this.fmt = fmt;
   }
 };
 
@@ -386,10 +388,10 @@ exports.create = function (logcfg) {
 };
 exports.getTime = getTime;
 exports.getFormatter = function () {
-  return Logger.fmt;
+  return function () { };
 };
 exports.setFormatter = function (fmt) {
-  Logger.fmt = fmt;
+  // Logger.fmt = fmt;
 };
 
 exports.STDOUT = process.stdout;
