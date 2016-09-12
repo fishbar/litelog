@@ -166,11 +166,11 @@ Logger.OFF = 6;
 
 Logger.prototype = {
   depth: 4,
-  _log: function (type, depth, msgs) {
+  _log: function (type, depth, msgs, pos) {
     if (Logger[type] < this._level) {
       return;
     }
-    let pos = getPos(depth).substr(this._root.length);
+    pos = pos || getPos(depth).substr(this._root.length);
     this._stream.write(formatLog(this.fmt, this._colorful, type, this._name, pos, msgs));
   },
   literal: function (msg) {
