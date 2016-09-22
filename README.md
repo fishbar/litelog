@@ -22,7 +22,8 @@ var Log = require('litelog');
 var logConfig = {
   sys: {
     level: 'DEBUG', // level can be DEBUG|TRACE|INFO|WARN|ERROR|FATAL
-    file: Log.STDOUT
+    file: Log.STDOUT, // abs file path or  STDOUT
+    cork: 500 // cork interval, unit ms, by default, stream is uncork
   }
 };
 var log = Log.create(logConfig);
@@ -44,7 +45,7 @@ var logConfig = {
   moduleA: {
     level: 'WARN',
     // split your log file, all support vars are list in this example
-    file: './logs/moduleA.%year%.%month%.%day%.%hour%.%pid%'
+    file: './logs/moduleA.%year%.%month%.%day%.%hour%.%pid%',
   },
   custom: {
     level: 'DEBUG',

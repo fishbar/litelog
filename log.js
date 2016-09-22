@@ -149,7 +149,11 @@ function Logger(name, cfg) {
   this._name = name;
   this._level = Logger[cfg.level ? cfg.level : 'WARN'];
   this.logFile = cfg.file;
-  this._stream = new LogStream({file: cfg.file || process.stdout, duration: cfg.duration});
+  this._stream = new LogStream({
+    file: cfg.file || process.stdout,
+    cork: cfg.cork,
+    mode: cfg.mode
+  });
   this._stream.onCut = function (filename) {
     self.logFile = filename;
     cfg.onCut && cfg.onCut(filename);
@@ -234,8 +238,8 @@ Logger.prototype = {
  * options {
  *   file: log_path, support variable : %year% , %month% , %day% , %hour% , %pid%
  *   encoding : utf8
- *   mode : 0666
- *   duration : 2  unit hour, and  24 % duration = 0 ,min=1, max=24
+ *   mode : 0666,
+ *   cork:
  * }
  */
 function LogStream(options) {
@@ -248,16 +252,39 @@ function LogStream(options) {
     this.nameformat = this.nameformat ? this.nameformat[0] : 'info.%year%-%month%-%day%.log';
     this.nameformat = this.nameformat.replace('%pid%', process.pid);
   }
-  this.duration = parseInt(options.duration, 10);
-  if (isNaN(this.duration) || (24 % this.duration) !== 0 || this.duration > 24 || this.duration < 1) {
-    this.duration = 2;
-  }
+  this.flagCork = options.cork;
+  this.duration = this.getDuration(options.file);
   this.encoding = options.encoding || 'utf8';
   this.streamMode = options.mode || '0666';
   this.cut();
   this.startTimer();
+  let self = this;
+  if (options.cork) {
+    this.corkInterval = setInterval(function () {
+      if (self.flagStd) {
+        return;
+      }
+      if (!self.stream) {
+        return;
+      }
+      self.stream.uncork();
+      self.stream.cork();
+    }, options.cork);
+  }
 }
 util.inherits(LogStream, EventEmitter);
+
+LogStream.prototype.getDuration = function (str) {
+  if (typeof str !== 'string') {
+    return 1;
+  }
+  if (/%minute%/.test(str)) {
+    return 1;
+  } else {
+    return 60;
+  }
+};
+
 LogStream.prototype.write = function (string, encoding) {
   var st = this.stream;
   try {
@@ -272,11 +299,17 @@ LogStream.prototype.end = function () {
   if (this.stream === process.stdout || this.stream === process.stderr) {
     return;
   }
+  if (this.corkInterval) {
+    clearInterval(this.corkInterval);
+  }
   // avoid call stream.end twice
   if (this.stream && this.stream.writable) {
     this.stream.removeAllListeners();
-    this.stream.end();
-    this.stream.destroySoon();
+    if (this.stream.close) {
+      this.stream.close();
+    } else {
+      this.stream.end();
+    }
   }
 };
 LogStream.prototype.cut = function () {
@@ -286,6 +319,7 @@ LogStream.prototype.cut = function () {
   var month = fixZero(date.getMonth() + 1);
   var day = fixZero(date.getDate());
   var hour = fixZero(date.getHours());
+  var minute = fixZero(date.getMinutes());
   var logpath;
   var newname;
   if (this.stream === process.stdout || this.stream === process.stderr) {
@@ -293,12 +327,14 @@ LogStream.prototype.cut = function () {
   }
   if (this.filename === process.stdout || this.filename === process.stderr) {
     this.stream = this.filename;
+    this.flagStd = true;
   } else {
     newname = this.nameformat
                 .replace(/%year%/g, year)
                 .replace(/%month%/g, month)
                 .replace(/%day%/g, day)
-                .replace(/%hour%/g, hour);
+                .replace(/%hour%/g, hour)
+                .replace(/%minute%/g, minute);
     if (this.filename === newname) {
       return;
     }
@@ -309,6 +345,9 @@ LogStream.prototype.cut = function () {
       fs.sync().save(logpath, '');
     }
     this.stream = fs.createWriteStream(logpath, {flags: 'a'});
+    if (this.flagCork) {
+      this.stream.cork();
+    }
     this.onCut && this.onCut(newname);
   }
   this._reopening = true;
@@ -327,8 +366,12 @@ LogStream.prototype.cut = function () {
 
   if (oldstream && oldstream !== process.stdout && oldstream !== process.stderr) {
     oldstream.removeAllListeners();
-    oldstream.end();
-    oldstream.destroySoon();
+    oldstream.uncork();
+    if (oldstream.close) {
+      oldstream.close();
+    } else {
+      oldstream.end();
+    }
   }
 };
 
@@ -336,11 +379,13 @@ LogStream.prototype.startTimer = function () {
   // duration = 2 hours
   var date = new Date();
   var now = date.getTime();
-  var hour = date.getHours();
-  var detHour = this.duration - hour % this.duration;
 
-  date.setHours(hour + detHour);
-  date.setMinutes(0);
+  if (this.duration === 1) {
+    date.setMinutes(date.getMinutes() + 1);
+  } else {
+    date.setHours(date.getHours() + 1);
+    date.setMinutes(0);
+  }
   date.setSeconds(0);
   date.setMilliseconds(0);
 
@@ -387,10 +432,11 @@ exports.create = function (logcfg) {
   return defaultLog;
 };
 exports.getTime = getTime;
+
 exports.getFormatter = function () {
   return function () { };
 };
-exports.setFormatter = function (fmt) {
+exports.setFormatter = function () {
   // Logger.fmt = fmt;
 };
 
