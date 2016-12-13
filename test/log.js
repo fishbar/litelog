@@ -137,15 +137,12 @@ describe('test log', function () {
       var ll = log.get('abc');
       expect(typeof ll.info).to.be('function');
     });
-    it('check end log', function () {
+    it('check end log', function (done) {
       var ll = log.get('sys');
-      ll.end();
-      ll.debug('test');
-      if (ll._stream.stream._writableState) {
-        expect(ll._stream.stream._writableState.ended).to.be(true);
-      } else {
-        expect(ll._stream.stream.writable).to.be(false);
-      }
+      ll.end(function () {
+        expect(ll._stream.stream.closed).to.be(true);
+        done();
+      });
     });
     it('create by config file', function (done) {
       fs.writeFileSync('./logs/config.json', '{"fff":{"level":"ERROR","file":"./logs/fff.log"}}', 'utf-8');

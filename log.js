@@ -24,7 +24,7 @@ var fs = require('xfs'),
   instances = {},
   defaultLog = null;
 
-// close streams
+/* close streams
 process.on('exit', function () {
   for (var i in instances) {
     instances[i]._stream.end('');
@@ -32,6 +32,7 @@ process.on('exit', function () {
   instances = null;
   defaultLog = null;
 });
+*/
 
 function fixZero(num) {
   return num > 9 ? num : '0' + num;
@@ -140,7 +141,7 @@ function formatLog(fmt, colorful, level, type, pos, msgs) {
 }
 
 function Logger(name, cfg) {
-  if (!this instanceof Logger) {
+  if (!(this instanceof Logger)) {
     return defaultLog.get(name);
   }
   var self = this;
@@ -158,6 +159,8 @@ function Logger(name, cfg) {
     self.logFile = filename;
     cfg.onCut && cfg.onCut(filename);
   };
+  // alias literal => write
+  this.write = this.literal;
 }
 
 Logger.DEBUG = 0;
@@ -221,8 +224,8 @@ Logger.prototype = {
     this._colorful = bool;
   },
   time: getTime,
-  end: function () {
-    this._stream.end();
+  end: function (cb) {
+    this._stream.end(cb);
   },
   fmt: function (obj) {
     return obj.color(obj.level, obj.time() + ' ' + obj.level) + ' #' + obj.pid + ' ' + obj.type + ' (' + obj.pos + ') ' + obj.msg;
@@ -247,10 +250,8 @@ function LogStream(options) {
   if (options.file === process.stdout || options.file === process.stderr) {
     this.filename = options.file;
   } else {
-    this.logdir = path.dirname(options.file.match(/^\//) ? options.file : path.join(options.file));
-    this.nameformat = options.file.match(/[^\/]+$/);
-    this.nameformat = this.nameformat ? this.nameformat[0] : 'info.%year%-%month%-%day%.log';
-    this.nameformat = this.nameformat.replace('%pid%', process.pid);
+    this.logdir = path.dirname(options.file);
+    this.nameformat = path.basename(options.file).replace(/%pid%/g, process.pid);
   }
   this.flagCork = options.cork;
   this.duration = this.getDuration(options.file);
@@ -295,21 +296,28 @@ LogStream.prototype.write = function (string, encoding) {
     /* eslint-enable no-alert, no-console */
   }
 };
-LogStream.prototype.end = function () {
-  if (this.stream === process.stdout || this.stream === process.stderr) {
+LogStream.prototype.end = function (cb) {
+  var stream = this.stream;
+  if (stream === process.stdout || stream === process.stderr) {
+    cb && cb();
     return;
   }
   if (this.corkInterval) {
     clearInterval(this.corkInterval);
   }
   // avoid call stream.end twice
-  if (this.stream && this.stream.writable) {
-    this.stream.removeAllListeners();
-    if (this.stream.close) {
-      this.stream.close();
-    } else {
-      this.stream.end();
-    }
+  if (stream) {
+    stream.uncork();
+    stream.removeAllListeners();
+    stream.end(function () {
+      if (stream.close) {
+        stream.close(cb);
+      } else if (cb) {
+        cb();
+      }
+    });
+  } else if (cb) {
+    cb();
   }
 };
 LogStream.prototype.cut = function () {
@@ -367,11 +375,7 @@ LogStream.prototype.cut = function () {
   if (oldstream && oldstream !== process.stdout && oldstream !== process.stderr) {
     oldstream.removeAllListeners();
     oldstream.uncork();
-    if (oldstream.close) {
-      oldstream.close();
-    } else {
-      oldstream.end();
-    }
+    oldstream.close();
   }
 };
 
@@ -432,6 +436,25 @@ exports.create = function (logcfg) {
   return defaultLog;
 };
 exports.getTime = getTime;
+
+exports.end = function (cb) {
+  let keys = Object.keys(instances);
+  let total = keys.length;
+  let count = 0;
+  let flagCallback = false;
+  function done() {
+    count++;
+    if (count >= total && !flagCallback) {
+      flagCallback = true;
+      cb && cb();
+    }
+  }
+  for (var i in instances) {
+    instances[i]._stream.end(done);
+  }
+  instances = null;
+  defaultLog = null;
+};
 
 exports.getFormatter = function () {
   return function () { };
