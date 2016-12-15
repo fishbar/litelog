@@ -7,10 +7,9 @@ var path = require('path');
 var log = Log.create({
   sys : {
     level: 'DEBUG',
-    file : path.join(__dirname, '../logs/exit.%minute%.log'),
+    file : path.join(__dirname, '../logs/exit.%hour%.log'),
   }
 });
-
 
 setInterval(function () {
   log.info('hello');

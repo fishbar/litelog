@@ -38,8 +38,8 @@ function fixZero(num) {
   return num > 9 ? num : '0' + num;
 }
 
-function getTime() {
-  var t = new Date();
+function getTime(d) {
+  var t = d || new Date();
   var Y = t.getFullYear() * 10000 + (t.getMonth() + 1) * 100 + t.getDate();
   var H = t.getHours();
   var M = t.getMinutes();
@@ -239,7 +239,7 @@ Logger.prototype = {
  * LogStream
  * @param {Object} options
  * options {
- *   file: log_path, support variable : %year% , %month% , %day% , %hour% , %pid%
+ *   file: log_path, support variable : %year% , %month% , %day% , %hour% , %minute% , %pid%
  *   encoding : utf8
  *   mode : 0666,
  *   cork:
