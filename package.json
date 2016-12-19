@@ -18,8 +18,7 @@
     "mocha": "*",
     "jscoverage": "*",
     "expect.js": "*",
-    "benchmark": "*",
-    "microtime": "^2.1.1"
+    "benchmark": "*"
   },
   "scripts": {
     "test": "mocha test"

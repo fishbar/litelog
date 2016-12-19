@@ -92,7 +92,7 @@ function formatMsg() {
     if (i >= len) {
       return x;
     }
-    let s;
+    var s;
     switch (x) {
       case '%s': return String(args[i++]);
       case '%d': return Number(args[i++]);
@@ -259,7 +259,7 @@ function LogStream(options) {
   this.streamMode = options.mode || '0666';
   this.cut();
   this.startTimer();
-  let self = this;
+  var self = this;
   if (options.cork) {
     this.corkInterval = setInterval(function () {
       if (self.flagStd) {
@@ -438,10 +438,10 @@ exports.create = function (logcfg) {
 exports.getTime = getTime;
 
 exports.end = function (cb) {
-  let keys = Object.keys(instances);
-  let total = keys.length;
-  let count = 0;
-  let flagCallback = false;
+  var keys = Object.keys(instances);
+  var total = keys.length;
+  var count = 0;
+  var flagCallback = false;
   function done() {
     count++;
     if (count >= total && !flagCallback) {
