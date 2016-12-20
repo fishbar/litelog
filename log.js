@@ -153,7 +153,8 @@ function Logger(name, cfg) {
   this._stream = new LogStream({
     file: cfg.file || process.stdout,
     cork: cfg.cork,
-    mode: cfg.mode
+    mode: cfg.mode,
+    remain: cfg.remain
   });
   this._stream.onCut = function (filename) {
     self.logFile = filename;
@@ -250,9 +251,9 @@ function LogStream(options) {
   if (options.file === process.stdout || options.file === process.stderr) {
     this.filename = options.file;
   } else {
-    this.logdir = path.dirname(options.file);
-    this.nameformat = path.basename(options.file).replace(/%pid%/g, process.pid);
+    this.nameformat = options.file;
   }
+  this.remain = options.remain;
   this.flagCork = options.cork;
   this.duration = this.getDuration(options.file);
   this.encoding = options.encoding || 'utf8';
@@ -320,14 +321,9 @@ LogStream.prototype.end = function (cb) {
     cb();
   }
 };
+
 LogStream.prototype.cut = function () {
   var oldstream = this.stream;
-  var date = new Date();
-  var year = date.getFullYear();
-  var month = fixZero(date.getMonth() + 1);
-  var day = fixZero(date.getDate());
-  var hour = fixZero(date.getHours());
-  var minute = fixZero(date.getMinutes());
   var logpath;
   var newname;
   if (this.stream === process.stdout || this.stream === process.stderr) {
@@ -337,17 +333,12 @@ LogStream.prototype.cut = function () {
     this.stream = this.filename;
     this.flagStd = true;
   } else {
-    newname = this.nameformat
-                .replace(/%year%/g, year)
-                .replace(/%month%/g, month)
-                .replace(/%day%/g, day)
-                .replace(/%hour%/g, hour)
-                .replace(/%minute%/g, minute);
+    newname = this.calculateFileName();
     if (this.filename === newname) {
       return;
     }
     this.filename = newname;
-    logpath = path.join(this.logdir, newname);
+    logpath = newname;
     // touch file
     if (!fs.existsSync(logpath)) {
       fs.sync().save(logpath, '');
@@ -358,6 +349,7 @@ LogStream.prototype.cut = function () {
     }
     this.onCut && this.onCut(newname);
   }
+  /*
   this._reopening = true;
   this.stream
     .on('error', this.emit.bind(this, 'error'))
@@ -371,13 +363,72 @@ LogStream.prototype.cut = function () {
         this.emit('close');
       }
     }.bind(this));
-
+  */
   if (oldstream && oldstream !== process.stdout && oldstream !== process.stderr) {
     oldstream.removeAllListeners();
     oldstream.uncork();
-    oldstream.close();
+    oldstream.end(function () {
+      if (oldstream.close) {
+        oldstream.close();
+      }
+    });
+  }
+  this.rotate();
+};
+
+LogStream.prototype.rotate = function () {
+  if (!this.remain) {
+    return;
+  }
+  var self = this;
+  var r = this.remain + 1;
+  var stop = r + 10;
+  function unlinkCb(tmp) {
+    return function (err) {
+      if (err && err.code !== 'ENOENT') {
+        self.write('\n-------- rotate file error: ' + tmp + ' err:' + err.message + '\n');
+      }
+    };
+  }
+  var tmp;
+  for (; r < stop; r++) {
+    tmp = this.calculateFileName(r);
+    fs.unlink(tmp, unlinkCb(tmp));
   }
 };
+
+LogStream.prototype.calculateFileName = function (remain) {
+  var nameformat = this.nameformat;
+  var date = new Date();
+  if (remain) {
+    if (/%minute%/.test(nameformat)) {
+      date.setMinutes(date.getMinutes() - remain);
+    } else if (/%hour%/.test(nameformat)) {
+      date.setHours(date.getHours() - remain);
+    } else if (/%day%/.test(nameformat)) {
+      date.setDate(date.getDate() - remain);
+    } else if (/%month%/.test(nameformat)) {
+      date.setMonth(date.getMonth() - remain);
+    } else if (/%year%/.test(nameformat)) {
+      date.setYear(date.getFullYear() - remain);
+    }
+  }
+
+  var year = date.getFullYear();
+  var month = fixZero(date.getMonth() + 1);
+  var day = fixZero(date.getDate());
+  var hour = fixZero(date.getHours());
+  var minute = fixZero(date.getMinutes());
+
+  return this.nameformat
+    .replace(/%year%/g, year)
+    .replace(/%month%/g, month)
+    .replace(/%day%/g, day)
+    .replace(/%hour%/g, hour)
+    .replace(/%minute%/g, minute)
+    .replace(/%pid%/g, process.pid);
+};
+
 
 LogStream.prototype.startTimer = function () {
   // duration = 2 hours

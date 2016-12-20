@@ -177,4 +177,66 @@ describe('test log', function () {
       ll.colorful(false);
     });
   });
+
+  describe('class LogStream', function () {
+    var stream = log._stream;
+    function fixZero(num) {
+      return num > 9 ? num : '0' + num;
+    }
+    it('should get log filename fine with minute', function () {
+      var originNameformat = this.nameformat;
+      var remain = this.remain;
+      var date = new Date();
+      date.setMinutes(date.getMinutes() - 5);
+
+      var result = date.getMinutes();
+      stream.remain = 5;
+      stream.nameformat = '/tmp/test/abc.%minute%.log';
+      expect(stream.calculateFileName(5)).to.be(`/tmp/test/abc.${fixZero(result)}.log`);
+    });
+    it('should get log filename fine with hour', function () {
+      var originNameformat = this.nameformat;
+      var remain = this.remain;
+      var date = new Date();
+      date.setHours(date.getHours() - 5);
+
+      var result = date.getHours();
+      stream.remain = 5;
+      stream.nameformat = '/tmp/test/abc.%hour%.log';
+      expect(stream.calculateFileName(5)).to.be(`/tmp/test/abc.${fixZero(result)}.log`);
+    });
+    it('should get log filename fine with day', function () {
+      var originNameformat = this.nameformat;
+      var remain = this.remain;
+      var date = new Date();
+      date.setDate(date.getDate() - 5);
+
+      var result = date.getDate();
+      stream.remain = 5;
+      stream.nameformat = '/tmp/test/abc.%day%.log';
+      expect(stream.calculateFileName(5)).to.be(`/tmp/test/abc.${fixZero(result)}.log`);
+    });
+    it('should get log filename fine with month', function () {
+      var originNameformat = this.nameformat;
+      var remain = this.remain;
+      var date = new Date();
+      date.setMonth(date.getMonth() - 5);
+
+      var result = date.getMonth() + 1;
+      stream.remain = 5;
+      stream.nameformat = '/tmp/test/abc.%month%.log';
+      expect(stream.calculateFileName(5)).to.be(`/tmp/test/abc.${fixZero(result)}.log`);
+    });
+    it('should get log filename fine with month', function () {
+      var originNameformat = this.nameformat;
+      var remain = this.remain;
+      var date = new Date();
+      date.setFullYear(date.getFullYear() - 5);
+
+      var result = date.getFullYear();
+      stream.remain = 5;
+      stream.nameformat = '/tmp/test/abc.%year%.log';
+      expect(stream.calculateFileName(5)).to.be(`/tmp/test/abc.${result}.log`);
+    });
+  });
 });
