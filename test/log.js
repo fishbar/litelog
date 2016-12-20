@@ -192,7 +192,7 @@ describe('test log', function () {
       var result = date.getMinutes();
       stream.remain = 5;
       stream.nameformat = '/tmp/test/abc.%minute%.log';
-      expect(stream.calculateFileName(5)).to.be(`/tmp/test/abc.${fixZero(result)}.log`);
+      expect(stream.calculateFileName(5)).to.be('/tmp/test/abc.' + fixZero(result) + '.log');
     });
     it('should get log filename fine with hour', function () {
       var originNameformat = this.nameformat;
@@ -203,7 +203,7 @@ describe('test log', function () {
       var result = date.getHours();
       stream.remain = 5;
       stream.nameformat = '/tmp/test/abc.%hour%.log';
-      expect(stream.calculateFileName(5)).to.be(`/tmp/test/abc.${fixZero(result)}.log`);
+      expect(stream.calculateFileName(5)).to.be('/tmp/test/abc.' + fixZero(result) + '.log');
     });
     it('should get log filename fine with day', function () {
       var originNameformat = this.nameformat;
@@ -214,7 +214,7 @@ describe('test log', function () {
       var result = date.getDate();
       stream.remain = 5;
       stream.nameformat = '/tmp/test/abc.%day%.log';
-      expect(stream.calculateFileName(5)).to.be(`/tmp/test/abc.${fixZero(result)}.log`);
+      expect(stream.calculateFileName(5)).to.be('/tmp/test/abc.' + fixZero(result) + '.log');
     });
     it('should get log filename fine with month', function () {
       var originNameformat = this.nameformat;
@@ -225,7 +225,7 @@ describe('test log', function () {
       var result = date.getMonth() + 1;
       stream.remain = 5;
       stream.nameformat = '/tmp/test/abc.%month%.log';
-      expect(stream.calculateFileName(5)).to.be(`/tmp/test/abc.${fixZero(result)}.log`);
+      expect(stream.calculateFileName(5)).to.be('/tmp/test/abc.' + fixZero(result) + '.log');
     });
     it('should get log filename fine with month', function () {
       var originNameformat = this.nameformat;
@@ -236,7 +236,7 @@ describe('test log', function () {
       var result = date.getFullYear();
       stream.remain = 5;
       stream.nameformat = '/tmp/test/abc.%year%.log';
-      expect(stream.calculateFileName(5)).to.be(`/tmp/test/abc.${result}.log`);
+      expect(stream.calculateFileName(5)).to.be('/tmp/test/abc.' + result + '.log');
     });
   });
 });
