@@ -225,6 +225,7 @@ Logger.prototype = {
     this._colorful = bool;
   },
   // time: getTime,
+  getTime: getTime,
   end: function (cb) {
     this._stream.end(cb);
   },
