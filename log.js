@@ -154,7 +154,7 @@ function Logger(name, cfg) {
     file: cfg.file || process.stdout,
     cork: cfg.cork,
     mode: cfg.mode,
-    remain: cfg.remain
+    remain: cfg.rotation || cfg.remain
   });
   this._stream.onCut = function (filename) {
     self.logFile = filename;
@@ -224,7 +224,7 @@ Logger.prototype = {
   colorful: function (bool) {
     this._colorful = bool;
   },
-  time: getTime,
+  // time: getTime,
   end: function (cb) {
     this._stream.end(cb);
   },
@@ -507,9 +507,15 @@ exports.end = function (cb) {
   defaultLog = null;
 };
 
+/**
+ * @deprecated
+ */
 exports.getFormatter = function () {
   return function () { };
 };
+/**
+ * @deprecated
+ */
 exports.setFormatter = function () {
   // Logger.fmt = fmt;
 };
