@@ -382,7 +382,7 @@ LogStream.prototype.rotate = function () {
   }
   var self = this;
   var r = this.remain + 1;
-  var stop = r + 10;
+  var stop = r + 3;
   function unlinkCb(tmp) {
     return function (err) {
       if (err && err.code !== 'ENOENT') {
