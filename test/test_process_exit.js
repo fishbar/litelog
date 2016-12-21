@@ -7,7 +7,8 @@ var path = require('path');
 var log = Log.create({
   sys : {
     level: 'DEBUG',
-    file : path.join(__dirname, '../logs/exit.%hour%.log'),
+    file : path.join(__dirname, '../logs/exit.%minute%.log'),
+    rotation: 1
   }
 });
 
