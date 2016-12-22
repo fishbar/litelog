@@ -6,23 +6,28 @@
  */
 'use strict';
 
-var fs = require('xfs'),
-  util = require('util'),
-  path = require('path'),
-  EventEmitter = require('events').EventEmitter,
-  colors = {
-    DEBUG : 36,
-    TRACE : 32,
-    INFO  : 34,
-    WARN  : 33,
-    ERROR : 31,
-    FATAL : 35
-  },
-  // log 配置
-  logConfig,
-  // log 实例
-  instances = {},
-  defaultLog = null;
+var fs = require('xfs');
+var util = require('util');
+var EventEmitter = require('events').EventEmitter;
+var colors = {
+  DEBUG: 36,
+  TRACE: 32,
+  INFO: 34,
+  WARN: 33,
+  ERROR: 31,
+  FATAL: 35,
+  BLACK: 30,
+  RED: 31,
+  GREEN: 32,
+  YELLOW: 33,
+  BLUE: 34,
+  WHITE: 37,
+};
+// log 配置
+var logConfig;
+// log 实例
+var instances = {};
+var defaultLog = null;
 
 /* close streams
 process.on('exit', function () {
@@ -234,7 +239,8 @@ Logger.prototype = {
   },
   setFormatter: function (fmt) {
     this.fmt = fmt;
-  }
+  },
+  color: color
 };
 
 /**
