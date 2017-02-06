@@ -315,8 +315,6 @@ LogStream.prototype.end = function (cb) {
   }
   // avoid call stream.end twice
   if (stream) {
-    stream.uncork();
-    stream.removeAllListeners();
     stream.end(function () {
       if (stream.close) {
         stream.close(cb);
