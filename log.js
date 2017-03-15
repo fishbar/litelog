@@ -385,6 +385,9 @@ LogStream.prototype.rotate = function () {
   if (!this.remain) {
     return;
   }
+  if (this.stream === process.stdout || this.stream === process.stderr) {
+    return;
+  }
   var self = this;
   var r = this.remain + 1;
   var stop = r + 3;
