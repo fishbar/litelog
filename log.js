@@ -511,7 +511,7 @@ exports.end = function (cb) {
   for (var i in instances) {
     instances[i]._stream.end(done);
   }
-  instances = null;
+  instances = {};
   defaultLog = null;
 };
 
