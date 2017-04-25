@@ -215,6 +215,9 @@ Logger.prototype = {
       /* eslint-enable no-alert, no-console */
       log = defaultLog;
     }
+    if (defaultLog === null) {
+      throw new Error('litelog not init or litelog had been destroyed');
+    }
     return log;
   },
   getStream: function () {
@@ -514,6 +517,9 @@ exports.end = function (cb) {
   instances = {};
   defaultLog = null;
 };
+
+exports.Logger = Logger;
+exports.LogStream = LogStream;
 
 /**
  * @deprecated
