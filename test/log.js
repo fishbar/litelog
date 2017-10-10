@@ -176,6 +176,27 @@ describe('test log', function () {
       ll.debug('this is show in std, and should colorful');
       ll.colorful(false);
     });
+
+    it('check custom fmt', function (done) {
+      var file = path.join(__dirname, '../logs/test_fmt.log');
+      var llog = Log.create({
+        sys: {
+          level: 'DEBUG',
+          file: file,
+          fmt: function (obj) {
+            return obj.level + ' ' + obj.msg
+          }
+        }
+      }).get('sys');
+
+      llog.info('test');
+      llog.end(function () {
+        let res = fs.readFileSync(file).toString();
+        expect(res).to.be('INFO test\n');
+        fs.unlink(file, done);
+      });
+
+    });
   });
 
   describe('class LogStream', function () {

@@ -131,8 +131,8 @@ function formatLog(fmt, colorful, level, type, pos, msgs) {
   var msg = formatMsg.apply(null, msgs);
   var pid = process.pid;
 
-    // custom log formatter
-  return fmt({
+  // custom log formatter
+  let obj = {
     level: level,
     pid: pid,
     type: type,
@@ -142,7 +142,8 @@ function formatLog(fmt, colorful, level, type, pos, msgs) {
       return msg;
     },
     time: getTime
-  }) + '\n';
+  };
+  return fmt(obj) + '\n';
 }
 
 function Logger(name, cfg) {
@@ -165,6 +166,10 @@ function Logger(name, cfg) {
     self.logFile = filename;
     cfg.onCut && cfg.onCut(filename);
   };
+
+  if (cfg.fmt) {
+    this.fmt = cfg.fmt;
+  }
   // alias literal => write
   this.write = this.literal;
 }
@@ -184,7 +189,7 @@ Logger.prototype = {
       return;
     }
     pos = pos || getPos(depth).substr(this._root.length);
-    this._stream.write(formatLog(this.fmt, this._colorful, type, this._name, pos, msgs));
+    this._stream.write(exports.formatLog(this.fmt, this._colorful, type, this._name, pos, msgs));
   },
   literal: function (msg) {
     this._stream.write(msg + '\n');
@@ -431,7 +436,7 @@ LogStream.prototype.calculateFileName = function (remain) {
   var hour = fixZero(date.getHours());
   var minute = fixZero(date.getMinutes());
 
-  return this.nameformat
+  return nameformat
     .replace(/%year%/g, year)
     .replace(/%month%/g, month)
     .replace(/%day%/g, day)
@@ -481,7 +486,7 @@ exports.create = function (logcfg) {
     logConfig = logcfg;
   }
   if (!logConfig) {
-    throw new Error('litelog config error');
+    throw new Error('litelog config error, config is empty');
   }
   var count = 0;
   for (var i in logConfig) {
@@ -520,6 +525,7 @@ exports.end = function (cb) {
 
 exports.Logger = Logger;
 exports.LogStream = LogStream;
+exports.formatLog = formatLog;
 
 /**
  * @deprecated

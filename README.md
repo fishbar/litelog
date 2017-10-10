@@ -50,7 +50,23 @@ var logConfig = {
   },
   custom: {
     level: 'DEBUG',
-    file: './logs/custom.log'
+    file: './logs/custom.log',
+    /**
+     * custom log formatter
+     */
+    fmt: function(obj) {
+      /**
+       * message obj:
+       *   level {String} message level
+       *   pid {String} pid,
+       *   type {String} type,
+       *   pos {String} pos,
+       *   msg {String} msg,
+       *   color(level, msg) {Function} print msg colorfully  
+       *   time(d) {Function} getTime, if d is undefined, d = now()
+       */
+       return return obj.color(obj.level, obj.time() + ' ' + obj.level) + ' #' + obj.pid + ' ' + obj.type + ' (' + obj.pos + ') ' + obj.msg;
+    }
   }
 };
 var log = Log.create(logConfig);
@@ -66,13 +82,6 @@ log.setRoot(root);
 ```
 
 ## <class> Log
-
-### static function
-
-<del>
-* Log.setFormatter(fmt<Function>)  # custom log formatter
-* Log.getFormatter()               # get current log formatter
-</del>
 
 ### instance functions
 
