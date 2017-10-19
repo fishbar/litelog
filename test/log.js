@@ -4,7 +4,7 @@
  * Create   : 2014-03-29 16:52:44
  * CopyRight 2014 (c) Fish And Other Contributors
  */
-var Log = require('../log');
+var Log = require('../');
 var fs = require('xfs');
 var expect = require('expect.js');
 var path = require('path');
@@ -86,7 +86,7 @@ describe('test log', function () {
     });
     it('check custom formatter', function (done) {
       var ll = log.get('custom');
-      var originFmt = Log.getFormatter();
+      var originFmt = ll.getFormatter();
       ll.setFormatter(function (obj) {
         obj.time = obj.time();
         return JSON.stringify(obj);
@@ -103,7 +103,7 @@ describe('test log', function () {
         expect(obj.level).match(/WARN/);
         expect(obj.pid).match(/^\d+$/);
         expect(obj.type).to.be('custom');
-        expect(obj.time).to.match(/^\d{8} \d{2}:\d{2}:\d{2}.\d{3}$/);
+        expect(obj.time).to.match(/^\d{8}-\d{2}:\d{2}:\d{2}.\d{3}$/);
         ll.setFormatter(originFmt);
         done();
       });

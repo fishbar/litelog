@@ -1,4 +1,4 @@
-var Log = require('../log');
+var Log = require('../');
 var fs = require('xfs');
 var expect = require('expect.js');
 var path = require('path');

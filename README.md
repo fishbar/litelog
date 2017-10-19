@@ -63,9 +63,9 @@ var logConfig = {
        *   pos {String} pos,
        *   msg {String} msg,
        *   color(level, msg) {Function} print msg colorfully  
-       *   time(d) {Function} getTime, if d is undefined, d = now()
+       *   time(d<Date>, fmt<String>) {Function} getTime, if d is undefined, d = now()
        */
-       return return obj.color(obj.level, obj.time() + ' ' + obj.level) + ' #' + obj.pid + ' ' + obj.type + ' (' + obj.pos + ') ' + obj.msg;
+       return obj.color(obj.level, obj.time() + ' ' + obj.level) + ' #' + obj.pid + ' ' + obj.type + ' (' + obj.pos + ') ' + obj.msg;
     }
   }
 };
