@@ -3,7 +3,7 @@
     "name": "fish"
   },
   "name": "litelog",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "repository": {
     "url": ""
   },
@@ -12,7 +12,7 @@
     "node": ">=4.0.0"
   },
   "dependencies": {
-    "xfs": "0.1.6"
+    "xfs": "0.2.2"
   },
   "devDependencies": {
     "mocha": "*",
