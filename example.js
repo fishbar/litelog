@@ -12,16 +12,14 @@ var logConfig = {
   // default log stream
   sys : {
     level : 'DEBUG',  // can be : DEBUG/TRACE/INFO/WARN/ERROR/FATAL
-    file : 'STDOUT'   // can be a  abs file path, or STDERROR , or STDOUT
   },
   // another log stream
   custom: {
-    level: 'INFO',
-    file: './test.log',
+    level: 'INFO'
   }
 };
 
-var Log = require('./log');
+var Log = require('./');
 
 var log = Log.create(logConfig);
 
@@ -29,7 +27,6 @@ log.info();
 log.warn();
 log.error();
 log.debug();
-
 
 var custom = log.get('custom')
 custom.debug();
