@@ -26,14 +26,16 @@ describe('logstream', () => {
     it('should work fine', (done) => {
       stream.write('abc');
       let cnt;
-      cnt = fs.readFileSync(logfile).toString();
-      expect(cnt).to.be('abc');
-      stream.write('def');
-      stream.end(()=> {
+      setTimeout(function () {
         cnt = fs.readFileSync(logfile).toString();
-        expect(cnt).to.be('abcdef');
-        done();
-      });
+        expect(cnt).to.be('abc');
+        stream.write('def');
+        stream.end(()=> {
+          cnt = fs.readFileSync(logfile).toString();
+          expect(cnt).to.be('abcdef');
+          done();
+        });
+      }, 10);
     });
   });
 
