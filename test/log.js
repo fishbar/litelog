@@ -195,7 +195,29 @@ describe('test log', function () {
         expect(res).to.be('INFO test\n');
         fs.unlink(file, done);
       });
+    });
 
+    it('check custom fmt with rawMessage', function (done) {
+      var file = path.join(__dirname, '../logs/test_fmt_rawmsg.log');
+      var llog = Log.create({
+        sys: {
+          level: 'DEBUG',
+          file: file,
+          rawMessage: true,
+          fmt: function (obj) {
+            expect(obj.msg.length).to.be(1);
+            expect(obj.msg[0]).to.be('test');
+            return obj.level + ' ' + obj.msg[0];
+          }
+        }
+      }).get('sys');
+
+      llog.info('test');
+      llog.end(function () {
+        let res = fs.readFileSync(file).toString();
+        expect(res).to.be('INFO test\n');
+        fs.unlink(file, done);
+      });
     });
   });
 

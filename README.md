@@ -24,7 +24,8 @@ var logConfig = {
     level: 'DEBUG', // level can be DEBUG|TRACE|INFO|WARN|ERROR|FATAL
     file: Log.STDOUT, // abs file path or  STDOUT
     cork: 500 // cork interval, unit ms, by default, stream is uncork, this will optmize fs.write performance
-    rotation: 60 // set up log file auto rotation, this number means max log files will be keeped, then other will be auto deleted
+    rotation: 60, // set up log file auto rotation, this number means max log files will be keeped, then other will be auto deleted
+    rawMessage: false // set to `true` only if u want to custom the log format
   }
 };
 var log = Log.create(logConfig);

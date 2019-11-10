@@ -8,6 +8,6 @@ install:
 
 test:
 	@$(INSTALL_TEST)
-	@$(MOCHA) ./test --coverage
+	@$(MOCHA) ./test --coverage --exit
 
 .PHONY: instal test
