@@ -11,5 +11,6 @@ describe('utils.js', () => {
 
   it('getTime() fine', () => {
     expect(testMod.getTime()).to.match(/\d{8}-\d{2}:\d{2}:\d{2}.\d{3}/);
+    expect(testMod.getTime(new Date(), '%Y-%m-%d %H:%M:%S')).to.match(/\d{2}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
   });
 });
