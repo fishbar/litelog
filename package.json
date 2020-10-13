@@ -22,5 +22,6 @@
   },
   "scripts": {
     "test": "mocha test"
-  }
+  },
+  "repositry": "https://github.com/fishbar/litelog.git"
 }
